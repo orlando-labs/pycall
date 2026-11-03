@@ -48,7 +48,7 @@ def _unpack(packet):
     packet[1]
 
 def wrap(value): _unpack(_value(_pack(value)))
-def eval(source): _unpack(_eval(source, _dispatch))
+def eval(source): _unpack(_eval(source, (&_dispatch)))
 def import_module(path): _unpack(_import(path))
 def import_name(path, name): import_module(path).getattr(name)
 
@@ -62,13 +62,13 @@ class Object:
   def invoke(name, *args, **kwargs, &block):
     _cleanup_callbacks()
     python_block = null
-    if block:
+    if &block:
       python_block = |packets|:
         values = packets.map |packet|: _unpack(packet)
         _pack(block(*values))
     packed_args = args.map |arg|: _pack(arg)
     packed_kwargs = kwargs.entries.map |entry|: [entry[0].to_str, _pack(entry[1])]
-    _unpack(_send(@handle, name, packed_args, packed_kwargs, python_block, _dispatch))
+    _unpack(_send(@handle, name, packed_args, packed_kwargs, (&python_block), (&_dispatch)))
 
   def call(*args, **kwargs, &block): invoke("__call__", *args, **kwargs, &block)
   def getattr(name): _unpack(_get(@handle, name.to_str))
@@ -87,7 +87,7 @@ class Object:
   def destroy!(): @handle.destroy!()
 
 
-def callback(fn): _unpack(_callback(_register_callback(fn)))
+def callback(fn): _unpack(_callback(_register_callback((&fn))))
 
 _callbacks = {}
 _callback_counter = [0]
@@ -97,12 +97,12 @@ def _register_callback(block):
   _callback_mutex.synchronize:
     _callback_counter[0] = _callback_counter[0] + 1
     id = _callback_counter[0]
-    _callbacks[id] = block
+    _callbacks[id] = &block
     id
 
 def _dispatch(id, packets):
   block = _callback_mutex.synchronize: _callbacks[id]
-  raise LocalJumpError("Python callback has been released") unless block
+  raise LocalJumpError("Python callback has been released") unless &block
   values = packets.map |packet|: _unpack(packet)
   _pack(block(*values))
 

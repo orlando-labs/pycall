@@ -36,7 +36,7 @@ def main():
       body = |x|:
         task.sleep(0.001)
         x + local.get()
-      worker_callback = pycall.callback(body)
+      worker_callback = pycall.callback((&body))
       worker_callback(5)
   check(child.wait() == 82)
   print("PASS pycall smoke")

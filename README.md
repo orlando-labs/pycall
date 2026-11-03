@@ -27,7 +27,7 @@ python3 configure.py --python /path/to/python3
 ../sputnik-lang/build/sputnik pkg install "$PWD"
 ```
 
-Configuration writes `sputnik.build.json` and `sputnik.toml` with the selected
+Configuration writes one `sputnik.build.yaml` with the selected
 SDK/library paths. These are local build facts; regenerate them on another host.
 For example on this development Mac the interpreter is `/opt/homebrew/bin/python3.14`.
 The compiler itself has no Python dependency.
@@ -138,3 +138,6 @@ prefix, for example `import slowpilot.pycall.math as math`.
 On macOS the provider/cache and selected interpreter must be on the same
 filesystem. The runtime image is hard-linked so installed native modules use
 the same interpreter instance; no interpreter library bytes are modified.
+
+Configuration prepares local runtime/SDK descriptors and prints the explicit
+`SPUTNIK_NATIVE_PROVIDERS` binding used for builds and package installation.
